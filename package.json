@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "async-file": "^2.0.2",
+    "axios": "^0.17.1",
+    "cheerio": "^1.0.0-rc.2",
     "fetch": "^1.1.0",
     "node-fetch": "^1.7.3"
   }
