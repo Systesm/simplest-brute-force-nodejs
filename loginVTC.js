@@ -99,8 +99,8 @@ function sleep(ms) {
             const username = user[i];
             for (let j = 0; j < pass.length; j++) {
                 const password = pass[j];
-                tryLogin(username, password)
                 console.log("Checking: "+username+':'+password)
+                await tryLogin(username, password)
                 sleep(500)
             }
         }
