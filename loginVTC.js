@@ -47,6 +47,7 @@ async function doLogin(user, pass, cookieSession, key) {
                 'Referer': 'https://vtcgame.vn/nap-vcoin/qua-the-cao.html',
                 'Cookie': 'ASP.NET_SessionId='+cookieSession,
             },
+            timeout: 5000,
             data: 'conten=' + new Buffer(user).toString("base64") + '&value=' + new Buffer(pass).toString("base64") +'&capt=&hidverify=&isRemember=false&key='+key+'&otp=&otpType=1&returnURL=http%3A%2F%2Flocalhost%3A3955%2F:'
         })
         console.log(login.data)

